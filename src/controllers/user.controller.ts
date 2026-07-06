@@ -3,14 +3,13 @@ import authModel from "../models/auth.models";
 import { Types } from 'mongoose'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { catchError, tryError } from "../utils/error";
 
 
 const accessTokenExpiry = '10m';
 const refreshTokenExpiry = '';
 
-interface ErrorMessage extends Error {
-    status?: number;
-}
+
 
 interface payloadInterface {
     _id: Types.ObjectId;
@@ -37,9 +36,7 @@ export const signup = async (req: Request, res: Response) => {
 
     catch (error: unknown) {
 
-        if (error instanceof Error) {
-            res.status(500).json({ message: error.message });
-        }
+        catchError(error, res);
 
     }
 }
@@ -54,17 +51,14 @@ export const login = async (req: Request, res: Response) => {
         const user = await authModel.findOne({ email: email });
 
         if (!user) {
-            const err: ErrorMessage = new Error("User not found , please try to signup first");
-            err.status = 404;
-            throw err
+            throw tryError("User not found , please try to signup first", 404);
+
         }
 
         const isMatchPassword = await bcrypt.compare(password, user.password);
 
         if (!isMatchPassword) {
-            const err: ErrorMessage = new Error("Invalid credentials");
-            err.status = 401;
-            throw err;
+            throw tryError("Invalid credentials", 401);
         }
 
         const payload = { _id: user._id, email: user.email, fullname: user.fullname, mobile: user.mobile };
@@ -86,10 +80,7 @@ export const login = async (req: Request, res: Response) => {
 
     catch (error: unknown) {
 
-        if (error instanceof Error) {
-            const status = (error as ErrorMessage).status || 500
-            res.status(status).json({ message: error.message });
-        }
+        catchError(error, res, "Login Failed please try after some time");
 
     }
 }
