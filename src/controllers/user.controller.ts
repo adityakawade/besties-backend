@@ -89,3 +89,18 @@ export const login = async (req: Request, res: Response) => {
 export const forgotPassword = (req: Request, res: Response) => {
     res.send("hello signup");
 }
+
+
+
+export const getSession = async(req: Request, res: Response) => {
+    try {
+        const accessToken = req.cookies.accessToken;
+        if (!accessToken) {
+            throw tryError("Invalid session", 401);
+        }
+        const session = await jwt.verify(accessToken, process.env.JWT_SECRET!)
+        res.send(session);
+    } catch (error) {
+        catchError(error, res, "Invalid session");
+    }
+}
