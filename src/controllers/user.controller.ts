@@ -11,7 +11,7 @@ const refreshTokenExpiry = '';
 
 
 
-interface payloadInterface {
+export interface payloadInterface {
     _id: Types.ObjectId;
     email: string;
     fullname: string;

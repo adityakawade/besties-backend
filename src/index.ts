@@ -16,6 +16,7 @@ import cookieparser from 'cookie-parser'
 import cors from 'cors'
 import AuthRouter from './routes/auth.routes';
 import storageRouter from './routes/storage.router';
+import Authmiddleware from './middleware/auth.middleware';
 const app = express();
 app.listen(process.env.PORT || 8080, () => {
     console.log(`server is running on port ${process.env.PORT}`);
@@ -35,7 +36,7 @@ app.use(express.urlencoded({ extended: false }));
 
 
 app.use('/auth', AuthRouter);
-app.use('/storage', storageRouter)
+app.use('/storage', Authmiddleware, storageRouter)
 
 
 
