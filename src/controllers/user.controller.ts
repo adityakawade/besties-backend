@@ -4,6 +4,8 @@ import { Types } from 'mongoose'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { catchError, tryError } from "../utils/error";
+import { payloadInterface, sessionInterface } from "../middleware/auth.middleware";
+import { downloadObject } from "../utils/s3";
 
 
 const accessTokenExpiry = '10m';
@@ -11,12 +13,6 @@ const refreshTokenExpiry = '';
 
 
 
-export interface payloadInterface {
-    _id: Types.ObjectId;
-    email: string;
-    fullname: string;
-    mobile: string
-}
 
 
 const generateToken = (payload: payloadInterface) => {
@@ -61,7 +57,14 @@ export const login = async (req: Request, res: Response) => {
             throw tryError("Invalid credentials", 401);
         }
 
-        const payload = { _id: user._id, email: user.email, fullname: user.fullname, mobile: user.mobile };
+
+        const payload = {
+            _id: user._id,
+            email: user.email,
+            fullname: user.fullname,
+            mobile: user.mobile,
+            image: user.image ? await downloadObject(user.image) : null
+        };
 
         const options = {
             httpOnly: true,
@@ -92,7 +95,7 @@ export const forgotPassword = (req: Request, res: Response) => {
 
 
 
-export const getSession = async(req: Request, res: Response) => {
+export const getSession = async (req: Request, res: Response) => {
     try {
         const accessToken = req.cookies.accessToken;
         if (!accessToken) {
@@ -102,5 +105,27 @@ export const getSession = async(req: Request, res: Response) => {
         res.send(session);
     } catch (error) {
         catchError(error, res, "Invalid session");
+    }
+}
+
+
+
+export const updateProfilePicture = async (req: sessionInterface, res: Response) => {
+    try {
+        const path = req.body?.path;
+
+        if (!path || !req.session) {
+            throw tryError("Failed to update ptofile picture")
+        }
+
+        const user = await authModel.updateOne({ _id: req.session._id }, { $set: { image: path } });
+
+        const url = await downloadObject(path, 60);
+
+
+        res.json({ image: url })
+
+    } catch (error) {
+        catchError(error, res, "failed to update profile picture")
     }
 }

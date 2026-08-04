@@ -1,7 +1,17 @@
 import { NextFunction, Request, Response } from 'express'
 import { catchError, tryError } from '../utils/error';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { payloadInterface } from '../controllers/user.controller';
+
+import { Types } from 'mongoose';
+
+
+export interface payloadInterface {
+    _id: Types.ObjectId;
+    email: string;
+    fullname: string;
+    mobile: string;
+    image?: string | null
+}
 
 export interface sessionInterface extends Request {
     session?: payloadInterface
@@ -9,7 +19,7 @@ export interface sessionInterface extends Request {
 
 const Authmiddleware = (req: sessionInterface, res: Response, next: NextFunction) => {
     try {
-        console.log("welcome to middleware");
+
         const accessToken = req.cookies.accessToken
 
         if (!accessToken) {
@@ -17,14 +27,15 @@ const Authmiddleware = (req: sessionInterface, res: Response, next: NextFunction
         }
 
         const payload = jwt.verify(accessToken, process.env.JWT_SECRET!) as JwtPayload;
-        console.log(payload);
+
 
 
         req.session = {
             _id: payload._id,
             fullname: payload.fullname,
             mobile: payload.mobile,
-            email: payload.email
+            email: payload.email,
+            image: payload.image
         }
 
 
