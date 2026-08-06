@@ -1,7 +1,7 @@
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
-const s3 = new S3Client({
+const conn = new S3Client({
     region: process.env.REGION,
     endpoint: `https://s3-${process.env.REGION}.amazonaws.com`
 
@@ -16,7 +16,7 @@ export const isFileExist = async (path: string) => {
             Key: path
         })
 
-        await s3.send(command);
+        await conn.send(command);
         return true;
     } catch (error) {
 
@@ -32,7 +32,7 @@ export const downloadObject = async (path: string, expiry: number = 60) => {
         Key: path
     })
 
-    const url = await getSignedUrl(s3, command, { expiresIn: 60 });
+    const url = await getSignedUrl(conn, command, { expiresIn: 60 });
 
     return url;
 }
@@ -47,7 +47,7 @@ export const uploadObject = async (path: string, type: string) => {
         ContentType: type
     });
 
-    const url = await getSignedUrl(s3, command, { expiresIn: 60 });
+    const url = await getSignedUrl(conn, command, { expiresIn: 60 });
 
     return url;
 }
