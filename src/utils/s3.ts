@@ -32,13 +32,13 @@ export const downloadObject = async (path: string, expiry: number = 60) => {
         Key: path
     })
 
-    const url = await getSignedUrl(conn, command, { expiresIn: 60 });
+    const url = await getSignedUrl(conn, command, { expiresIn: expiry });
 
     return url;
 }
 
 
-export const uploadObject = async (path: string, type: string) => {
+export const uploadObject = async (path: string, type: string, expiry: number = 60) => {
 
 
     const command = new PutObjectCommand({
@@ -47,7 +47,7 @@ export const uploadObject = async (path: string, type: string) => {
         ContentType: type
     });
 
-    const url = await getSignedUrl(conn, command, { expiresIn: 60 });
+    const url = await getSignedUrl(conn, command, { expiresIn: expiry });
 
     return url;
 }

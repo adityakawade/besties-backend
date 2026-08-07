@@ -23,7 +23,7 @@ const Authmiddleware = (req: sessionInterface, res: Response, next: NextFunction
         const accessToken = req.cookies.accessToken
 
         if (!accessToken) {
-            throw tryError("Unauthorized ", 401)
+            throw tryError("failed to authorize user ", 401)
         }
 
         const payload = jwt.verify(accessToken, process.env.JWT_SECRET!) as JwtPayload;
@@ -44,7 +44,7 @@ const Authmiddleware = (req: sessionInterface, res: Response, next: NextFunction
 
 
     } catch (error) {
-        catchError(error, res, "Unauthorized");
+        catchError(error, res, "failed to authorize user");
 
     }
 }

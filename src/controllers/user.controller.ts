@@ -6,18 +6,31 @@ import jwt from 'jsonwebtoken'
 import { catchError, tryError } from "../utils/error";
 import { payloadInterface, sessionInterface } from "../middleware/auth.middleware";
 import { downloadObject } from "../utils/s3";
+import { v4 as uuid } from 'uuid'
+import moment from 'moment';
 
 
 const accessTokenExpiry = '10m';
-const refreshTokenExpiry = '';
-
-
+const tenMinutesInMs = (10 * 60) * 1000;
+const sevenDaysInMs = (7 * 24 * 60 * 60) * 1000
+type tokenType = 'at' | 'rt'
 
 
 
 const generateToken = (payload: payloadInterface) => {
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: accessTokenExpiry });
-    return accessToken;
+    const refreshToken = uuid();
+    return { accessToken, refreshToken };
+}
+
+
+const getOption = (tokenType: any) => {
+    return {
+        httpOnly: true,
+        maxAge: tokenType == 'at' ? tenMinutesInMs : sevenDaysInMs,
+        secure: false,
+        domain: 'localhost'
+    }
 }
 
 
@@ -66,16 +79,20 @@ export const login = async (req: Request, res: Response) => {
             image: user.image ? await downloadObject(user.image) : null
         };
 
-        const options = {
-            httpOnly: true,
-            maxAge: (10 * 60) * 1000,
-            secure: false,
-            domain: 'localhost'
-        }
 
-        const accessToken = generateToken(payload);
 
-        res.cookie('accessToken', accessToken, options);
+        const { accessToken, refreshToken } = generateToken(payload);
+
+        await authModel.updateOne({ _id: user._id }, {
+            $set: {
+                refreshToken: refreshToken,
+                expiry: moment().add(7, "days").toDate()
+
+            }
+        })
+
+        res.cookie('accessToken', accessToken, getOption('at'));
+        res.cookie('refreshToken', refreshToken, getOption('rt'));
 
         res.json({ message: "login success" });
 
@@ -89,8 +106,33 @@ export const login = async (req: Request, res: Response) => {
 }
 
 
-export const forgotPassword = (req: Request, res: Response) => {
-    res.send("hello signup");
+export const refreshToken = async (req: sessionInterface, res: Response) => {
+    try {
+        if (!req.session) {
+            throw tryError("failed to refersh token", 401);
+        }
+
+
+        req.session.image = (req.session.image ? await downloadObject(req.session.image) : null)
+
+        const { accessToken, refreshToken } = generateToken(req.session);
+        await authModel.updateOne({ _id: req.session._id }, {
+            $set: {
+                refreshToken: refreshToken,
+                expiry: moment().add(7, "days").toDate()
+            }
+        })
+
+
+        res.cookie('accessToken', accessToken, getOption('at'));
+        res.cookie('refreshToken', refreshToken, getOption('rt'));
+
+        res.json({ message: "Token refresh" });
+
+
+    } catch (error) {
+        catchError(error, res, "failed to refersh token")
+    }
 }
 
 
