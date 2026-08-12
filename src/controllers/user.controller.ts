@@ -171,3 +171,27 @@ export const updateProfilePicture = async (req: sessionInterface, res: Response)
         catchError(error, res, "failed to update profile picture")
     }
 }
+
+
+
+export const logout = async (req: Request, res: Response) => {
+    try {
+        res.clearCookie('accessToken', {
+            httpOnly: true,
+            maxAge: 0,
+            secure: false,
+            domain: 'localhost'
+        })
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            maxAge: 0,
+            secure: false,
+            domain: 'localhost'
+        })
+
+
+        res.json({ message: "Logout success" })
+    } catch (error) {
+        catchError(error, res, "failed to logout")
+    }
+}

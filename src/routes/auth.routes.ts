@@ -1,5 +1,5 @@
 import express from 'express'
-import { refreshToken, getSession, login, signup, updateProfilePicture } from '../controllers/user.controller';
+import { refreshToken, getSession, login, signup, updateProfilePicture, logout } from '../controllers/user.controller';
 import Authmiddleware from '../middleware/auth.middleware';
 import RefreshToken from '../middleware/refrehToken.middleware';
 
@@ -7,9 +7,10 @@ import RefreshToken from '../middleware/refrehToken.middleware';
 const AuthRouter = express.Router();
 AuthRouter.post('/signup', signup);
 AuthRouter.post('/login', login);
-AuthRouter.get('/refresh-token',RefreshToken, refreshToken);
+AuthRouter.get('/refresh-token', RefreshToken, refreshToken);
 AuthRouter.get('/session', getSession);
-AuthRouter.put('/profile-picture', Authmiddleware, updateProfilePicture)
+AuthRouter.put('/profile-picture', Authmiddleware, updateProfilePicture);
+AuthRouter.post('/logout', logout)
 
 
 export default AuthRouter
