@@ -76,7 +76,7 @@ export const login = async (req: Request, res: Response) => {
             email: user.email,
             fullname: user.fullname,
             mobile: user.mobile,
-            image: user.image ? await downloadObject(user.image) : null
+            image: user.image
         };
 
 
@@ -113,7 +113,7 @@ export const refreshToken = async (req: sessionInterface, res: Response) => {
         }
 
 
-        req.session.image = (req.session.image ? await downloadObject(req.session.image) : null)
+
 
         const { accessToken, refreshToken } = generateToken(req.session);
         await authModel.updateOne({ _id: req.session._id }, {
@@ -154,7 +154,7 @@ export const getSession = async (req: Request, res: Response) => {
 
 export const updateProfilePicture = async (req: sessionInterface, res: Response) => {
     try {
-        const path = req.body?.path;
+        const path = `${process.env.S3_URL}/${req.body?.path}`;
 
         if (!path || !req.session) {
             throw tryError("Failed to update ptofile picture")
@@ -162,10 +162,10 @@ export const updateProfilePicture = async (req: sessionInterface, res: Response)
 
         const user = await authModel.updateOne({ _id: req.session._id }, { $set: { image: path } });
 
-        const url = await downloadObject(path, 60);
 
 
-        res.json({ image: url })
+
+        res.json({ image: path })
 
     } catch (error) {
         catchError(error, res, "failed to update profile picture")
