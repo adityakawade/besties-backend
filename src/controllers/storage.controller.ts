@@ -28,7 +28,7 @@ export const downloadFile = async (req: Request, res: Response) => {
         const url = await downloadObject(path, 60);
         res.json({ url });
 
-    } catch (error) {
+    } catch (error: unknown) {
 
         catchError(error, res, "failed to generate download url")
     }
@@ -54,7 +54,7 @@ export const uploadFile = async (req: Request, res: Response) => {
 
 
 
-    } catch (error) {
+    } catch (error: unknown) {
 
     }
 }

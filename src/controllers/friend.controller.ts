@@ -11,12 +11,12 @@ export const addFriend = async (req: sessionInterface, res: Response) => {
 
         const friend = await FriendModel.create(req.body)
         res.json(friend)
-    } catch (error) {
+    } catch (error: unknown) {
         catchError(error, res, "Failed to send friend request")
     }
 }
 
- 
+
 
 export const fetchFriend = async (req: sessionInterface, res: Response) => {
     try {
@@ -24,7 +24,7 @@ export const fetchFriend = async (req: sessionInterface, res: Response) => {
         const friends = await FriendModel.find({ user });
         res.json(friends)
 
-    } catch (error) {
+    } catch (error: unknown) {
         catchError(error, res, "Failed to send friend request")
     }
 }
@@ -36,9 +36,9 @@ export const suggestFriend = async (req: sessionInterface, res: Response) => {
             { $sample: { size: 5 } },
             { $project: { fullname: 1, image: 1 } }
         ]);
-       
-       res.json(friends)
-    } catch (error) {
+
+        res.json(friends)
+    } catch (error: unknown) {
         catchError(error, res, "Failed to send friend request")
     }
 }

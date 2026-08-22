@@ -1,11 +1,9 @@
 import { Request, Response } from "express";
 import authModel from "../models/auth.models";
-import { Types } from 'mongoose'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { catchError, tryError } from "../utils/error";
 import { payloadInterface, sessionInterface } from "../middleware/auth.middleware";
-import { downloadObject } from "../utils/s3";
 import { v4 as uuid } from 'uuid'
 import moment from 'moment';
 
@@ -67,7 +65,7 @@ export const login = async (req: Request, res: Response) => {
         const isMatchPassword = await bcrypt.compare(password, user.password);
 
         if (!isMatchPassword) {
-            throw tryError("Invalid credentials", 401);
+            throw tryError("Invalid credentials email or password incorrect", 401);
         }
 
 
@@ -130,7 +128,7 @@ export const refreshToken = async (req: sessionInterface, res: Response) => {
         res.json({ message: "Token refresh" });
 
 
-    } catch (error) {
+    } catch (error: unknown) {
         catchError(error, res, "failed to refersh token")
     }
 }
@@ -145,7 +143,7 @@ export const getSession = async (req: Request, res: Response) => {
         }
         const session = await jwt.verify(accessToken, process.env.JWT_SECRET!)
         res.send(session);
-    } catch (error) {
+    } catch (error: unknown) {
         catchError(error, res, "Invalid session");
     }
 }
@@ -167,7 +165,7 @@ export const updateProfilePicture = async (req: sessionInterface, res: Response)
 
         res.json({ image: path })
 
-    } catch (error) {
+    } catch (error: unknown) {
         catchError(error, res, "failed to update profile picture")
     }
 }
@@ -191,7 +189,7 @@ export const logout = async (req: Request, res: Response) => {
 
 
         res.json({ message: "Logout success" })
-    } catch (error) {
+    } catch (error: unknown) {
         catchError(error, res, "failed to logout")
     }
 }
