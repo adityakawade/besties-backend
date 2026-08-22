@@ -142,7 +142,7 @@ export const getSession = async (req: Request, res: Response) => {
             throw tryError("Invalid session", 401);
         }
         const session = await jwt.verify(accessToken, process.env.JWT_SECRET!)
-        res.send(session);
+        res.json(session);
     } catch (error: unknown) {
         catchError(error, res, "Invalid session");
     }
