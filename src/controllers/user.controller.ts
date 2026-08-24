@@ -158,10 +158,7 @@ export const updateProfilePicture = async (req: sessionInterface, res: Response)
             throw tryError("Failed to update ptofile picture")
         }
 
-        const user = await authModel.updateOne({ _id: req.session._id }, { $set: { image: path } });
-
-
-
+        await authModel.updateOne({ _id: req.session._id }, { $set: { image: path } });
 
         res.json({ image: path })
 
