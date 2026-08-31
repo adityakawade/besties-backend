@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { catchError } from '../utils/error'
+import { catchError, tryError } from '../utils/error'
 import FriendModel from '../models/friends.models'
 import { sessionInterface } from '../middleware/auth.middleware'
 import authModel from '../models/auth.models'
@@ -36,7 +36,12 @@ export const fetchFriend = async (req: sessionInterface, res: Response) => {
 
 export const suggestFriend = async (req: sessionInterface, res: Response) => {
     try {
-        const userId = new mongoose.Types.ObjectId(req.session?._id)
+
+        if (!req.session) {
+            throw tryError('Failed to suggest Friend', 401)
+        }
+
+        const userId = new mongoose.Types.ObjectId(req.session._id)
 
         const friends = await authModel.aggregate([
             { $match: { _id: { $ne: userId } } },
@@ -68,5 +73,38 @@ export const deleteFriend = async (req: Request, res: Response) => {
         res.json({ message: "Friend Deleted" })
     } catch (error) {
         catchError(error, res, "Failed to delete friend")
+    }
+}
+
+
+
+export const friendRequest = async (req: sessionInterface, res: Response) => {
+    try {
+
+        if (!req.session) {
+            throw tryError('Failed to fetch Friend request', 401)
+        }
+
+        const friends = await FriendModel.find({ friend: req.session?._id, status: "requested" }).populate('user', "fullname image")
+
+        res.json(friends)
+    } catch (error: unknown) {
+        catchError(error, res, "Failed to fetch friend request")
+    }
+}
+
+
+
+
+export const updateFriendStatus = async (req: sessionInterface, res: Response) => {
+    try {
+        if (!req.session) {
+            throw tryError('failed to update  friend status', 401)
+        }
+
+        await FriendModel.updateOne({ _id: req.params.id }, { $set: { status: req.body.status } })
+        res.json({ message: "friend status updated" })
+    } catch (error) {
+        catchError(error, res, "failed to update  friend status")
     }
 }
