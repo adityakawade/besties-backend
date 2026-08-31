@@ -52,7 +52,7 @@ export const suggestFriend = async (req: sessionInterface, res: Response) => {
 
         const modified = await Promise.all(
             friends.map(async (item) => {
-                const count = await FriendModel.countDocuments({ friend: item._id })
+                const count = await FriendModel.countDocuments({ user: userId, friend: item._id })
                 return count === 0 ? item : null
             })
         )
@@ -69,7 +69,20 @@ export const suggestFriend = async (req: sessionInterface, res: Response) => {
 
 export const deleteFriend = async (req: Request, res: Response) => {
     try {
-        await FriendModel.deleteOne({ _id: req.params.id })
+        const friend = await FriendModel.findById(req.params.id)
+
+        await FriendModel.deleteMany({
+            $or: [
+                {
+                    user: friend?.user,
+                    friend: friend?.friend
+                },
+                {
+                    user: friend?.friend,
+                    friend: friend?.user
+                }
+            ]
+        })
         res.json({ message: "Friend Deleted" })
     } catch (error) {
         catchError(error, res, "Failed to delete friend")
@@ -103,7 +116,20 @@ export const updateFriendStatus = async (req: sessionInterface, res: Response) =
         }
 
         await FriendModel.updateOne({ _id: req.params.id }, { $set: { status: req.body.status } })
+
+        const friendRequest = await FriendModel.findById(req.params.id)
+
+        if (req.body.status === "accepted") {
+            await FriendModel.create({
+                user: friendRequest?.friend,
+                friend: friendRequest?.user,
+                status: "accepted"
+            })
+        }
+
         res.json({ message: "friend status updated" })
+
+
     } catch (error) {
         catchError(error, res, "failed to update  friend status")
     }
