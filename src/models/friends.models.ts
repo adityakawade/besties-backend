@@ -15,16 +15,26 @@ const FriendSchema = new Schema({
 
     status: {
         type: String,
-        enum: ['requested', 'rejected', 'accepted'],
+        enum: ['requested', 'accepted'],
         default: 'requested'
     },
 
-    type: {
-        type: String,
-        enum: ['sent', 'recieved'],
-        default: 'sent'
-    }
+
 }, { timestamps: true })
+
+
+
+FriendSchema.pre('save', async function (next) {
+    try {
+        const count = await model('Friend').countDocuments({ user: this.user, friend: this.friend })
+        if (count > 0) {
+            throw new Error("Friend request already sent")
+        }
+
+    } catch (error) {
+        throw new Error("failed to send friend request")
+    }
+})
 
 
 const FriendModel = model('Friend', FriendSchema)
