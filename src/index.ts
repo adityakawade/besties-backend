@@ -18,13 +18,17 @@ import AuthRouter from './routes/auth.routes';
 import storageRouter from './routes/storage.router';
 import Authmiddleware from './middleware/auth.middleware';
 import FriendRouter from './routes/friend.router';
+import swaggerConfig from './utils/swagger';
+import { serve, setup } from 'swagger-ui-express';
+
+
 const app = express();
 app.listen(process.env.PORT || 8080, () => {
     console.log(`server is running on port ${process.env.PORT}`);
 
 })
 
-
+app.use('/api-docs', serve, setup(swaggerConfig))
 app.use(cors(
     {
         origin: process.env.CLIENT,

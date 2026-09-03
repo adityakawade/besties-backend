@@ -4,8 +4,7 @@ import FriendModel from '../models/friends.models'
 import { sessionInterface } from '../middleware/auth.middleware'
 import authModel from '../models/auth.models'
 import mongoose from 'mongoose'
-import { type } from 'os'
-import { Types } from 'mongoose'
+
 
 
 export const addFriend = async (req: sessionInterface, res: Response) => {
@@ -14,7 +13,7 @@ export const addFriend = async (req: sessionInterface, res: Response) => {
         console.log(req.body);
 
         const friend = await FriendModel.create(req.body)
-        res.json(friend)
+        res.json({ message: "Friend Request Sent" })
     } catch (error: unknown) {
         catchError(error, res, "Failed to send friend request")
     }
