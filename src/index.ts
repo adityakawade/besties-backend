@@ -12,6 +12,7 @@ mongoose.connect(process.env.DB!)
     })
 
 import express from 'express'
+import { createServer } from 'http'
 import cookieparser from 'cookie-parser'
 import cors from 'cors'
 import AuthRouter from './routes/auth.routes';
@@ -20,11 +21,31 @@ import Authmiddleware from './middleware/auth.middleware';
 import FriendRouter from './routes/friend.router';
 import swaggerConfig from './utils/swagger';
 import { serve, setup } from 'swagger-ui-express';
+import { Server } from 'socket.io'
 
 
 const app = express();
-app.listen(process.env.PORT || 8080, () => {
+const server = createServer(app)
+const io = new Server(server, {
+    cors: {
+        origin: process.env.CLIENT,
+        credentials: true
+    }
+})
+
+server.listen(process.env.PORT || 8080, () => {
     console.log(`server is running on port ${process.env.PORT}`);
+
+})
+
+io.on('connection', (user) => {
+    console.log('User connected');
+
+    user.on('message', (msg) => {
+        console.log(msg);
+        user.broadcast.emit('message', "hello sir")
+
+    })
 
 })
 
