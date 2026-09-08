@@ -24,6 +24,7 @@ import { serve, setup } from 'swagger-ui-express';
 import { Server } from 'socket.io'
 import statusSocket from './socket/status.socket.ts';
 import corsconfig from './utils/cors';
+import chatSocket from './socket/chat.socket';
 
 
 const app = express();
@@ -41,6 +42,7 @@ const io = new Server(server, {
 })
 
 statusSocket(io)
+chatSocket(io)
 
 
 
