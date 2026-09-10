@@ -25,6 +25,7 @@ import { Server } from 'socket.io'
 import statusSocket from './socket/status.socket.ts';
 import corsconfig from './utils/cors';
 import chatSocket from './socket/chat.socket';
+import chatRouter from './routes/chat.router';
 
 
 const app = express();
@@ -61,6 +62,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/auth', AuthRouter);
 app.use('/storage', Authmiddleware, storageRouter)
 app.use('/friend', Authmiddleware, FriendRouter);
+app.use('/chat', chatRouter)
 
 
 
