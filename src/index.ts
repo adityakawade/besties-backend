@@ -26,6 +26,7 @@ import statusSocket from './socket/status.socket.ts';
 import corsconfig from './utils/cors';
 import chatSocket from './socket/chat.socket';
 import chatRouter from './routes/chat.router';
+import videoSocket from './socket/video.socket';
 
 
 const app = express();
@@ -44,7 +45,7 @@ const io = new Server(server, {
 
 statusSocket(io)
 chatSocket(io)
-
+videoSocket(io)
 
 
 
