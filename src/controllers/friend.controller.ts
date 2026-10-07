@@ -10,7 +10,7 @@ import mongoose from 'mongoose'
 export const addFriend = async (req: sessionInterface, res: Response) => {
     try {
         req.body.user = req.session?._id
-        console.log(req.body);
+       
 
         const friend = await FriendModel.create(req.body)
         res.json({ message: "Friend Request Sent" })
